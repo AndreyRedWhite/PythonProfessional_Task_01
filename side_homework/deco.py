@@ -1,39 +1,51 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from functools import update_wrapper
+from functools import wraps
 
 
-def disable():
+def disable(func):
     '''
     Disable a decorator by re-assigning the decorator's name
     to this function. For example, to turn off memoization:
-
-    >>> memo = disable
-
     '''
-    return
+    return func
 
 
-def decorator():
-    '''
-    Decorate a decorator so that it inherits the docstrings
-    and stuff from the function it's decorating.
-    '''
-    return
+def decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        return result
+    return wrapper
 
 
-def countcalls():
+def countcalls(func):
     '''Decorator that counts calls made to the function decorated.'''
-    return
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        wrapper.calls += 1
+        return func(*args, **kwargs)
+    wrapper.calls = 1
+    return wrapper
 
 
-def memo():
+def memo(func):
     '''
     Memoize a function so that it caches all return values for
     faster future lookups.
     '''
-    return
+
+    cache = {}
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        key = args + tuple(sorted(kwargs.items()))
+        if key not in cache:
+            cache[key] = func(*args, **kwargs)
+        return cache[key]
+    return wrapper
 
 
 def n_ary():
@@ -44,39 +56,34 @@ def n_ary():
     return
 
 
-def trace():
-    '''Trace calls made to function decorated.
-
-    @trace("____")
-    def fib(n):
-        ....
-
-    >>> fib(3)
-     --> fib(3)
-    ____ --> fib(2)
-    ________ --> fib(1)
-    ________ <-- fib(1) == 1
-    ________ --> fib(0)
-    ________ <-- fib(0) == 1
-    ____ <-- fib(2) == 2
-    ____ --> fib(1)
-    ____ <-- fib(1) == 1
-     <-- fib(3) == 3
-
-    '''
-    return
+def trace(prefix=''):
+    def inner(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            wrapper.depth += 1
+            args_repr = [repr(a) for a in args]
+            kwargs_repr = [f"{k}={v}" for k, v in kwargs.items()]
+            signature = ", ".join(args_repr + kwargs_repr)
+            print(f"{prefix * (wrapper.depth - 1)}{prefix} --> {func.__name__}({signature})")
+            result = func(*args, **kwargs)
+            print(f"{prefix * (wrapper.depth - 1)}{prefix} <-- {func.__name__} == {result}")
+            wrapper.depth -= 1
+            return result
+        wrapper.depth = 0
+        return wrapper
+    return inner
 
 
 @memo
 @countcalls
-@n_ary
+# @n_ary
 def foo(a, b):
     return a + b
 
 
 @countcalls
 @memo
-@n_ary
+# @n_ary
 def bar(a, b):
     return a * b
 
@@ -91,13 +98,13 @@ def fib(n):
 
 def main():
     print(foo(4, 3))
-    print(foo(4, 3, 2))
+    # print(foo(4, 3, 2))
     print(foo(4, 3))
     print("foo was called", foo.calls, "times")
 
     print(bar(4, 3))
-    print(bar(4, 3, 2))
-    print(bar(4, 3, 2, 1))
+    # print(bar(4, 3, 2))
+    # print(bar(4, 3, 2, 1))
     print("bar was called", bar.calls, "times")
 
     print(fib.__doc__)
