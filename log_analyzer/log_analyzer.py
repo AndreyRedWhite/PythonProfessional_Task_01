@@ -99,9 +99,12 @@ def process_log_file(filepath: str) -> dict | None:
     return result
 
 
-def calculate_statistics(url_data: dict) -> dict:
+def calculate_statistics(url_data: dict) -> dict | None:
     """This function should calculate statistic (counts a various timers for each URL) for a given dict"""
 
+    # check wherer log data was succesfully parsed:
+    if not url_data:
+        return
     statistics = {}
     total_requests = sum(len(times) for times in url_data.values())
     total_time = sum(sum(times) for times in url_data.values())
@@ -179,6 +182,18 @@ def read_config(config_path: str, default_config: dict) -> dict:
     return merged_config
 
 
+def generate_report(data: str, config: dict, log_date: str) -> None:
+    with open('report_template.html', 'r') as file:
+        template = file.read()
+
+    report_html = template.replace('$table_json', data)
+
+    with open(os.path.join(config["reports"], f"report_{log_date}.html"), "w", encoding="utf-8") as f:
+        f.write(report_html)
+    logging.info(
+        f"The latest report 'report_{log_date}.html' was successfully generated and stored in: {config['reports']}")
+
+
 def main():
     logging.info("Started of executing a log_analyzer module. This log should go to STDOUT because config hasn't been"
                  "loaded yet. This message just for testing purposes")
@@ -202,19 +217,13 @@ def main():
             return
 
         statistics = calculate_statistics(process_log_file(log_file))
+        if not statistics:
+            return
         top_statistics = limit_report_data(statistics, config["REPORT_SIZE"])
         resulted_data = serialize_data_for_js(top_statistics)
         data_for_report = json.dumps(resulted_data)
+        generate_report(data_for_report, config, log_date)
 
-        with open('report_template.html', 'r') as file:
-            template = file.read()
-
-        report_html = template.replace('$table_json', data_for_report)
-
-        with open(os.path.join(config["reports"], f"report_{log_date}.html"), "w", encoding="utf-8") as f:
-            f.write(report_html)
-        logging.info(
-            f"The latest report 'report_{log_date}.html' was successfully generated and stored in: {config['reports']}")
     except Exception as e:
         logging.exception(f"Unexpected error occurred. Here's an exception: {e}")
 
