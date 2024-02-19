@@ -54,12 +54,16 @@ def find_latest_log(log_dir: str) -> tuple[str, str] | None:
 
 def log_reader(filepath: str) -> str:
     """Function for per-row processing a log file"""
+
     openers_map = {".gz": gzip.open, None: open}
     _, ext = os.path.splitext(filepath)
     opener = openers_map.get(ext, open)
-    with opener(filepath, "rt", encoding="utf-8") as f:
-        for line in f:
-            yield line
+    try:
+        with opener(filepath, "rt", encoding="utf-8") as f:
+            for line in f:
+                yield line
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"There was a problem whith opening a file {filepath}.\nThe issue is: {e}")
 
 
 def log_parser(line: str) -> tuple:
@@ -71,7 +75,7 @@ def log_parser(line: str) -> tuple:
         return match.group(1), float(match.group(2))
 
 
-def process_log_file(filepath: str) -> dict:
+def process_log_file(filepath: str) -> dict | None:
     """Func for processing a log file"""
 
     result = {}
@@ -91,7 +95,7 @@ def process_log_file(filepath: str) -> dict:
     error_rate = errors / total_lines if total_lines > 0 else 0
     if error_rate > 0.5:
         logging.error(f"Error rate too high: {error_rate:.2%}, which exceeds the threshold of 50%. Exiting.")
-        exit(1)
+        return
     return result
 
 

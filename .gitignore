@@ -6,6 +6,7 @@ __pycache__/
 
 log_analyzer/log/*
 log_analyzer/reports/*
+log_analyzer/.DS_Store
 */.DS_Store
 # C extensions
 *.so
