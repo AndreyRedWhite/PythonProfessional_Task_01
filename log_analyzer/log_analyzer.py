@@ -15,7 +15,7 @@ default_config = {
     "logging": "./log/log_analyzer.log"
 }
 
-# Here we use a temp config for logging before either config_file or default_config would be loade
+# Here we use a temp config for logging before either config_file or default_config would be load
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname).1s %(message)s', datefmt='%Y.%m.%d %H:%M:%S')
 
 
