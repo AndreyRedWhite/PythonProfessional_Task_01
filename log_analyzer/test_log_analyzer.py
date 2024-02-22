@@ -1,5 +1,6 @@
 import unittest
-from log_analyzer import log_parser, calculate_statistics
+
+from log_analyzer import calculate_statistics, log_parser
 
 
 class TestLogParser(unittest.TestCase):

@@ -1,0 +1,24 @@
+name: python Log Analyzer
+on: [push, pull_request]
+
+jobs:
+  lint_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Set up Python
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          pip install flake8 isort
+      - name: Check code with flake
+        run: |
+          flake8 .
+      - name: Check imports with isort
+        run: |
+          isort . --check-only
+      - name: run tests
+        run: |
+          python3 -m unittest log_anaylyzer/test_log_analyzer.py

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import gzip
-import re
-import json
-from datetime import datetime
-import os
-import logging
 import argparse
+import gzip
+import json
+import logging
+import os
+import re
+from datetime import datetime
 
 default_config = {
     "REPORT_SIZE": 1000,
@@ -15,13 +15,13 @@ default_config = {
     "logging": "./log/log_analyzer.log"
 }
 
-# Here we use a temp config for logging before either config_file or default_config would be loaded
+# Here we use a temp config for logging before either config_file or default_config would be loade
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname).1s %(message)s', datefmt='%Y.%m.%d %H:%M:%S')
 
 
 def setup_logging(config: dict) -> None:
     """
-    Func to setup a logging for this script after a CONFIG dict was loaded. Basically it changes an output to
+    Func to setup a logging for this script after a CONFIG dict was loaded. Basically it changes an output t
     logfile, provided by CONFIG, instead of STDOUT
     """
     logging.getLogger().handlers.clear()
@@ -38,7 +38,7 @@ def setup_logging(config: dict) -> None:
 def find_latest_log(log_dir: str) -> tuple[str, str] | None:
     """This function searches in $log dir for the latest logfile of nginx regardless whether it gzipped or not"""
 
-    regex = re.compile("nginx-access-ui\.log-(\d{8})(?:\.gz)?")
+    regex = re.compile("nginx-access-ui\\.log-(\\d{8})(?:\\.gz)?")
 
     log_files = [
         (file, datetime.strptime(regex.search(file).group(1), "%Y%m%d"))
@@ -69,7 +69,7 @@ def log_reader(filepath: str) -> str:
 def log_parser(line: str) -> tuple:
     """Func for parsing a row from a log file"""
     # log_regex = re.compile("\S+ \S+ \S+ \S+ (\S+).*?([\d.]+)$")
-    log_regex = re.compile("\"(?:GET|POST|PUT|DELETE|HEAD) (\S+).*(\d+\.\d+)$")
+    log_regex = re.compile("\"(?:GET|POST|PUT|DELETE|HEAD) (\\S+).*(\\d+\\.\\d+)$")
     match = log_regex.search(line)
     if match:
         return match.group(1), float(match.group(2))
@@ -89,7 +89,7 @@ def process_log_file(filepath: str) -> dict | None:
             errors += 1
         else:
             url, time = parsed_line
-            if not url in result:
+            if url not in result:
                 result[url] = []
             result[url].append(time)
     error_rate = errors / total_lines if total_lines > 0 else 0
