@@ -21,4 +21,4 @@ jobs:
           isort . --check-only
       - name: run tests
         run: |
-          python3 -m unittest log_anaylyzer/test_log_analyzer.py
+          python3 -m unittest log_analyzer/test_log_analyzer.py
